@@ -28,7 +28,9 @@
 #include <linux/bug.h>
 #ifdef CONFIG_FB
 #include <linux/fb.h>
+#ifdef CONFIG_FONT_SUPPORT
 #include <linux/font.h>
+#endif
 #endif
 #define CREATE_TRACE_POINTS
 #include <trace/events/exception.h>
@@ -65,7 +67,9 @@ EXPORT_SYMBOL(panic_blink);
 static void panic_to_screen(const char *msg)
 {
        struct fb_info *info;
+#ifdef CONFIG_FONT_SUPPORT
        const struct font_desc *font;
+#endif
        struct fb_fillrect rect;
        unsigned int x = 0, y = 0;
 
@@ -74,8 +78,13 @@ static void panic_to_screen(const char *msg)
 
        info = registered_fb[0];
        if (!info || !info->fbops || !info->screen_base ||
-           !info->fbops->fb_fillrect || !info->fbops->fb_imageblit)
+           !info->fbops->fb_fillrect)
                return;
+
+#ifdef CONFIG_FONT_SUPPORT
+       if (!info->fbops->fb_imageblit)
+               return;
+#endif
 
        rect.dx = 0;
        rect.dy = 0;
@@ -85,12 +94,15 @@ static void panic_to_screen(const char *msg)
        rect.rop = ROP_COPY;
        info->fbops->fb_fillrect(info, &rect);
 
+#ifdef CONFIG_FONT_SUPPORT
        font = find_font("VGA8x16");
        if (!font)
                font = find_font("VGA8x8");
        if (!font)
                return;
+#endif
 
+#ifdef CONFIG_FONT_SUPPORT
        for (; *msg; msg++) {
                struct fb_image img;
 
@@ -119,6 +131,7 @@ static void panic_to_screen(const char *msg)
                if (y * font->height >= info->var.yres)
                        break;
        }
+#endif
 }
 #endif
 
