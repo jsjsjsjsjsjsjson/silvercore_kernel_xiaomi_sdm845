@@ -175,12 +175,13 @@ msm_drm-$(CONFIG_DRM_MSM) += \
 	msm_gem_prime.o \
 	msm_gem_submit.o \
 	msm_gem_shrinker.o \
-	msm_gem_vma.o \
-	msm_gpu.o \
-	msm_iommu.o \
-	msm_smmu.o \
-	msm_perf.o \
-	msm_rd.o \
+        msm_gem_vma.o \
+        msm_gpu.o \
+        msm_iommu.o \
+        msm_smmu.o \
+        msm_perf.o \
+        msm_panic.o \
+        msm_rd.o \
 	msm_ringbuffer.o \
 	msm_prop.o \
 	msm_fence.o \

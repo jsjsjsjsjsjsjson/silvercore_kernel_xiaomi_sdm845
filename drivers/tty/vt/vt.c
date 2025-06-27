@@ -2976,7 +2976,7 @@ static void con_cleanup(struct tty_struct *tty)
 	tty_port_put(&vc->port);
 }
 
-static int default_color           = 7; /* white */
+static int default_color           = 0x70; /* black on white */
 static int default_italic_color    = 2; // green (ASCII)
 static int default_underline_color = 3; // cyan (ASCII)
 module_param_named(color, default_color, int, S_IRUGO | S_IWUSR);

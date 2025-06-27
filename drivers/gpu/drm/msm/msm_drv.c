@@ -47,6 +47,7 @@
 #include "msm_kms.h"
 #include "sde_wb.h"
 #include "dsi_display.h"
+#include "msm_panic.h"
 
 /*
  * MSM driver version:
@@ -321,8 +322,9 @@ static int msm_drm_uninit(struct device *dev)
 
 	component_unbind_all(dev, ddev);
 
-	sde_dbg_destroy();
-	debugfs_remove_recursive(priv->debug_root);
+       sde_dbg_destroy();
+       debugfs_remove_recursive(priv->debug_root);
+       msm_unregister_panic_notifier();
 
 	sde_power_client_destroy(&priv->phandle, priv->pclient);
 	sde_power_resource_deinit(pdev, &priv->phandle);
@@ -890,9 +892,11 @@ static int msm_drm_init(struct device *dev, struct drm_driver *drv)
 		}
 	}
 
-	drm_kms_helper_poll_init(ddev);
+       drm_kms_helper_poll_init(ddev);
 
-	return 0;
+       msm_register_panic_notifier();
+
+       return 0;
 
 fail:
 	msm_drm_uninit(dev);
