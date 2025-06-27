@@ -26,10 +26,6 @@
 #include <linux/nmi.h>
 #include <linux/console.h>
 #include <linux/bug.h>
-#ifdef CONFIG_FB
-#include <linux/fb.h>
-#include <linux/font.h>
-#endif
 #define CREATE_TRACE_POINTS
 #include <trace/events/exception.h>
 #include <soc/qcom/minidump.h>
@@ -54,73 +50,12 @@ EXPORT_SYMBOL(panic_notifier_list);
 
 static long no_blink(int state)
 {
-        return 0;
+	return 0;
 }
 
 /* Returns how long it waited in ms */
 long (*panic_blink)(int state);
 EXPORT_SYMBOL(panic_blink);
-
-#ifdef CONFIG_FB
-static void panic_to_screen(const char *msg)
-{
-       struct fb_info *info;
-       const struct font_desc *font;
-       struct fb_fillrect rect;
-       unsigned int x = 0, y = 0;
-
-       if (!num_registered_fb)
-               return;
-
-       info = registered_fb[0];
-       if (!info || !info->fbops || !info->screen_base ||
-           !info->fbops->fb_fillrect || !info->fbops->fb_imageblit)
-               return;
-
-       rect.dx = 0;
-       rect.dy = 0;
-       rect.width = info->var.xres;
-       rect.height = info->var.yres;
-       rect.color = 0xFFFFFF;
-       rect.rop = ROP_COPY;
-       info->fbops->fb_fillrect(info, &rect);
-
-       font = find_font("VGA8x16");
-       if (!font)
-               font = find_font("VGA8x8");
-       if (!font)
-               return;
-
-       for (; *msg; msg++) {
-               struct fb_image img;
-
-               if (*msg == '\n') {
-                       x = 0;
-                       y++;
-                       continue;
-               }
-
-               img.dx = x * font->width;
-               img.dy = y * font->height;
-               img.width = font->width;
-               img.height = font->height;
-               img.fg_color = 0x000000;
-               img.bg_color = 0xFFFFFF;
-               img.depth = 1;
-               img.data = font->data + (*msg) * font->height;
-
-               info->fbops->fb_imageblit(info, &img);
-
-               x++;
-               if (x * font->width >= info->var.xres) {
-                       x = 0;
-                       y++;
-               }
-               if (y * font->height >= info->var.yres)
-                       break;
-       }
-}
-#endif
 
 /*
  * Stop ourself in panic -- architecture code may override this
@@ -314,14 +249,11 @@ void panic(const char *fmt, ...)
 	 * should be disabled to avoid reporting bad unlock balance when
 	 * panic() is not being callled from OOPS.
 	 */
-       debug_locks_off();
-       console_flush_on_panic();
-#ifdef CONFIG_FB
-       panic_to_screen(buf);
-#endif
+	debug_locks_off();
+	console_flush_on_panic();
 
-       if (!panic_blink)
-               panic_blink = no_blink;
+	if (!panic_blink)
+		panic_blink = no_blink;
 
 	if (panic_timeout > 0) {
 		/*
