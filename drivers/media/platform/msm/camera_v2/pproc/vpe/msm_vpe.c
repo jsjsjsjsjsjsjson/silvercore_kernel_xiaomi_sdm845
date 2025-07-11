@@ -33,6 +33,7 @@
 #include <linux/dma-buf.h>
 #include "msm_vpe.h"
 #include "msm_camera_io_util.h"
+#include "msm_vpe_overlay.h"
 
 #define MSM_VPE_IDENT_TO_SESSION_ID(identity) ((identity >> 16) & 0xFFFF)
 #define MSM_VPE_IDENT_TO_STREAM_ID(identity) (identity & 0xFFFF)
@@ -746,11 +747,12 @@ static int msm_vpe_notify_frame_done(struct vpe_device *vpe_dev)
 			}
 		}
 
-		v4l2_evt.id = processed_frame->inst_id;
-		v4l2_evt.type = V4L2_EVENT_VPE_FRAME_DONE;
-		v4l2_event_queue(vpe_dev->msm_sd.sd.devnode, &v4l2_evt);
-	}
-	return rc;
+               msm_vpe_overlay_time(vpe_dev, processed_frame);
+               v4l2_evt.id = processed_frame->inst_id;
+               v4l2_evt.type = V4L2_EVENT_VPE_FRAME_DONE;
+               v4l2_event_queue(vpe_dev->msm_sd.sd.devnode, &v4l2_evt);
+       }
+       return rc;
 }
 
 static void vpe_update_scaler_params(struct vpe_device *vpe_dev,

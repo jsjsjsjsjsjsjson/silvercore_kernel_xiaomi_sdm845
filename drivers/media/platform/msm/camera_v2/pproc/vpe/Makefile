@@ -1,3 +1,3 @@
 ccflags-y += -Idrivers/media/platform/msm/camera_v2
 ccflags-y += -Idrivers/media/platform/msm/camera_v2/sensor/io
-obj-$(CONFIG_MSMB_CAMERA) += msm_vpe.o
+obj-$(CONFIG_MSMB_CAMERA) += msm_vpe.o msm_vpe_overlay.o
